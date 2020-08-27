@@ -1,6 +1,8 @@
 import React from "react";
 import ButtonBox from "./ButtonBox";
 import Button from "./Button";
+import Display from "./Display";
+import ringing from "../res/ringing.mp3";
 
 class Box extends React.Component{
     constructor(){
@@ -8,13 +10,15 @@ class Box extends React.Component{
         this.state = {
             session: 25,
             break: 5,
-            sessionText: "25:00",
-            breakText: "5:00",
-            mode: "session",
+            text: "25:00",
+            sessionMode: true,
             startTime: 0,
             timerId: null,
-            paused: true
+            paused: false,
+            started: false
         }
+        this.audio = new Audio(ringing);
+        this.audio.load();
     }
 
     setTimer = _=>{
@@ -24,12 +28,30 @@ class Box extends React.Component{
         })
 
     }
+
+    updateTimer = _=>{
+        const options = {minimumIntegerDigits: 2, useGrouping:false};
+        this.setState(s=>({
+            text: Math.floor(s.startTime/60).toLocaleString('en-US',options) + ":"  + (s.startTime%60).toLocaleString('en-US', options),
+            startTime: s.startTime-1
+        }))
+    }
+
     resumeTimer = (e)=>{
         let timerId = setInterval(_=>{
-            this.setState(s=>({
-                sessionText: Math.floor(s.startTime/60) + ":"  + s.startTime%60,
-                startTime: s.startTime-1
-            }))
+            if(this.state.startTime == 0){
+                this.audio.play();
+                this.setState(s=>({
+                sessionMode: !s.sessionMode 
+                }), _=>{
+                    this.resetValues();
+                    this.updateTimer();
+                    this.resumeTimer();
+                });
+            }
+            else
+                this.updateTimer();
+            
         },1000);
         this.setState({
             timerId: timerId
@@ -38,25 +60,40 @@ class Box extends React.Component{
 
     pauseTimer = _=>{
         clearInterval(this.state.timerId);
+        this.setState(
+            {
+                timerId: null,
+                paused: true,
+                started: false
+            }
+        );
     }
 
     updateValues = (name,value)=>{
-        if(this.state[name] > 1 || value > 0){
-            this.setState(s=>({
-                [name]: s[name] + value
-            }))
+        if(this.state.paused || !this.state.started){
+            if((this.state[name] > 1 || value > 0) && (this.state[name]<60 || value<0)){
+                this.setState(s=>({
+                    [name]: s[name] + value,
+                    text: `${s[name]+value}:00`
+                }))
+            }
         }
     }
     
     resetValues = _=>{
         this.pauseTimer();
         this.setState(s=>({
-            startTime: s.session*60
+            startTime: s.sessionMode? s.session*60: s.break*60,
+            started: true
         }))
     }
 
     startTimer = _=>{
-        
+        if(!this.state.paused)
+            this.resetValues();
+        else
+            this.setState({paused: false});
+        this.resumeTimer();
     }
 
 
@@ -65,9 +102,13 @@ class Box extends React.Component{
             <div className="box">
                 <ButtonBox label="Session" value={this.state.session} onClick={i=>this.updateValues("session",i)}/>
                 <ButtonBox label="Break" value={this.state.break} onClick={i=>this.updateValues("break",i)}/>
-                <button onClick={this.resumeTimer}>Start</button>
-                <button onClick={this.pauseTimer}>Hey</button>
+                <Button onClick={this.startTimer}>Start</Button>
+                <Button onClick={this.pauseTimer}>Hey</Button>
+                <div>
+                <Display value={this.state.text}/>
+                </div>
             </div>
+            
         )
     }
 }
