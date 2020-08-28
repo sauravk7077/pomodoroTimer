@@ -1,0 +1,93 @@
+$base: #2F384B;
+$white: #FAFAFA;
+$green: #09E698;
+$red: hsl(0, 94%, 65%);
+$blue: #73B9CE;
+$font: 'Josefin Sans';
+
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&display=swap');
+
+@mixin flex-center-wrap(){
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+body{
+    background: $base;
+    font-family: $font;
+}
+
+#root{
+    @include flex-center-wrap();
+    height: 100vh;
+}
+
+.box{
+    @include flex-center-wrap();
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: inset 0 0 1px 1px lighten($color: $base, $amount: 40%);
+    background: darken($color: $base, $amount: 10%);
+    color: $white;
+    flex-direction: column;
+    flex-basis: 400px;
+    
+}
+
+
+.incControls{
+    display: flex;
+    *{
+        margin:auto;
+    }
+}
+
+.display{
+    @include flex-center-wrap();
+    font-family: $font, sans-serif;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    font-size: 2.4em;
+}
+
+.controls{
+    @include flex-center-wrap();
+    div>.btn{
+        font-size: 0.8em;
+        margin: 5px;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        border: 2px solid $green;
+        &:hover{
+            background: $green;
+            color: $white;
+        }
+    }
+}
+
+.btn{
+    cursor: pointer;
+    margin: 5px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: lighten($base, 40%);
+    &:hover{
+        color: lighten($base, 60%);
+    }
+}
+
+.btnBoxGroup{
+    @include flex-center-wrap();
+    transition: all 1s ease-in-out;
+}
+
+.btnBox{
+    margin: 10px;
+}
