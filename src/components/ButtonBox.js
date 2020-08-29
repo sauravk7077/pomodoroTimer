@@ -12,7 +12,7 @@ function ButtonBox(props){
                 <Button id={label+'-decrement'} onClick={_=>{props.onClick(-1)}}>
                     <FontAwesomeIcon icon={faMinus}/>
                 </Button>
-                <div>{props.value}</div>
+                <div id={label+"-length"}>{props.value}</div>
                 <Button id={label+'-increment'} onClick={_=>{props.onClick(1)}}>
                     <FontAwesomeIcon icon={faPlus} />
                 </Button>

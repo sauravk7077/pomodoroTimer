@@ -7,7 +7,7 @@ function Display(props){
         border: `4px solid hsl(${completed}, 85%,65%)`
     }
     return(
-        <div className="display" style={style}>
+        <div className="display" id="time-left" style={style}>
             {props.value}
         </div>
     )

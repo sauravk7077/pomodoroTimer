@@ -46,6 +46,11 @@ body{
     }
 }
 
+.headText{
+    @include flex-center-wrap();
+    flex-direction: column;
+}
+
 .display{
     @include flex-center-wrap();
     font-family: $font, sans-serif;

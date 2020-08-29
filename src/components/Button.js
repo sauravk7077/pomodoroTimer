@@ -9,4 +9,7 @@ function Button(props){
     )
 }
 
+// <i className="fas fa-minus"></i>
+// <i className="fas fa-plus"></i>
+
 export default Button;

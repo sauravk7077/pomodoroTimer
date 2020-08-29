@@ -21,8 +21,6 @@ class Box extends React.Component{
             paused: false,
             started: false
         }
-        this.audio = new Audio(ringing);
-        this.audio.load();
     }
 
     setTimer = _=>{
@@ -33,6 +31,24 @@ class Box extends React.Component{
 
     }
 
+    doThis = _=>{
+        if(this.state.startTime == 0){
+            document.getElementById('beep').play();
+        }
+        if(this.state.startTime == -1){
+            this.setState(s=>({
+            sessionMode: !s.sessionMode 
+            }), _=>{
+                this.resetValues();
+                this.updateTimer();
+                this.resumeTimer();
+            });
+        }
+        else
+            this.updateTimer();
+        
+    }
+
     updateTimer = _=>{
         this.setState(s=>({
             text: Math.floor(s.startTime/60).toLocaleString('en-US',options) + ":"  + (s.startTime%60).toLocaleString('en-US', options),
@@ -40,25 +56,13 @@ class Box extends React.Component{
         }))
     }
 
-    resumeTimer = (e)=>{
-        let timerId = setInterval(_=>{
-            if(this.state.startTime == 0){
-                this.audio.play();
-                this.setState(s=>({
-                sessionMode: !s.sessionMode 
-                }), _=>{
-                    this.resetValues();
-                    this.updateTimer();
-                    this.resumeTimer();
-                });
-            }
-            else
-                this.updateTimer();
-            
-        },1000);
+    resumeTimer = _=>{
+        this.doThis();
+        let timerId = setInterval(this.doThis,1000);
         this.setState({
             timerId: timerId
         });
+        
     }
 
     pauseTimer = _=>{
@@ -66,8 +70,7 @@ class Box extends React.Component{
         this.setState(
             {
                 timerId: null,
-                paused: true,
-                started: false
+                paused: true
             }
         );
     }
@@ -83,23 +86,29 @@ class Box extends React.Component{
         }
     }
     
-    resetValues = _=>{
-        this.pauseTimer();
+    resetValues = (callback=(_=>{}))=>{
         this.setState(s=>({
             startTime: s.sessionMode? s.session*60: s.break*60,
             started: true
-        }))
+        }), callback)
     }
 
     startTimer = _=>{
-        if(!this.state.paused)
-            this.resetValues();
-        else
-            this.setState({paused: false});
-        this.resumeTimer();
+        if(!this.state.started){
+            this.resetValues(this.resumeTimer);
+        }else{
+            console.log(this.state.paused);
+            if(!this.state.paused)
+                this.pauseTimer();
+            else
+                this.setState({paused: false},this.resumeTimer);
+        }
+        
     }
 
     resetState = _=>{
+        document.getElementById('beep').pause();
+        document.getElementById('beep').currentTime = 0;
         this.pauseTimer();
         this.setState({
             session: 25,
@@ -114,14 +123,17 @@ class Box extends React.Component{
     }
 
 
+
     render() {
         const totalTime = this.state.session*60;
         const timeUsed = totalTime - this.state.startTime;
         let percentComplete = Math.ceil(timeUsed/totalTime * 100);
         return (
             <div className="box">
-                <div>
-                <Display value={this.state.text} completed={percentComplete}/>
+                <audio id="beep" src={ringing} preload></audio>
+                <div className="headText">
+                    <h1 id="timer-label">{this.state.sessionMode?'Session': "Break"}</h1>
+                    <Display value={this.state.text} completed={percentComplete}/>
                 </div>
                 <div className="btnBoxGroup">
                     <ButtonBox label="Session" value={this.state.session} onClick={i=>this.updateValues("session",i)}/>
@@ -138,5 +150,9 @@ class Box extends React.Component{
         )
     }
 }
+
+// <i className="fas fa-play" id="start"/>
+// <i className="fas fa-pause" id="pause"/>
+// <i className="fas fa-redo" id="reset"/>
 
 export default Box;
